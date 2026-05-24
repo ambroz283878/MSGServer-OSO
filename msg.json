@@ -1,0 +1,10 @@
+{
+    "action":"message",
+    "properties":
+    {
+        "sender":"Ambroz",
+        "recipient":"The Squad",
+        "content":"Panowie, kiedy piwo?"
+    }
+    
+}

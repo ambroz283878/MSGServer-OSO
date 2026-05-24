@@ -1,0 +1,6 @@
+dotenv
+#json
+#os
+psycopg2-binary
+#socket
+#threading

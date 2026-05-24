@@ -1,0 +1,9 @@
+{
+    "action":"register",
+    "properties":
+    {
+        "login":"Ambroz",
+        "password":"$ekret123"
+    }
+    
+}
