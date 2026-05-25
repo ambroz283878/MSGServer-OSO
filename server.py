@@ -9,7 +9,7 @@ def connectionHandler(conn, addr):
   onNewConnection(conn)
 
   rawPacket=conn.recv(1024).decode()
-  
+
   try:
     jsonPacket=json.loads(rawPacket)
   except json.JSONDecodeError:
@@ -66,7 +66,7 @@ def updateIP(username, addr):
     with dbConnection.cursor() as cursor:
       print(f"""Executing:\n{queryUpdateLastKnownIP}\nuser: {username}\naddr: {addr}""")
       cursor.execute(queryUpdateLastKnownIP, (addr[0], username))
-      
+
 def updatePublicKey(username, pubKey):
   queryUpdatePubKey = """UPDATE users SET public_key = (%s) WHERE name=(%s)"""
   with dbConnection:
