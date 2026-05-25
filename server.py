@@ -6,7 +6,7 @@ import socket
 import threading
 
 def connectionHandler(conn, addr):
-  conn.send('Thank you for connecting!\n'.encode()) 
+  onNewConnection(conn)
 
   rawPacket=conn.recv(1024).decode()
   
@@ -38,6 +38,7 @@ def loginUser(userConnection,jsonPacket):
         print(f"Failed login attempt into account {credentials["login"]} from {addr}")
         return -1
       userConnection.send(f'Succesfully logged in as {credentials["login"]}!'.encode())
+      
 
 def registerUser(userConnection,jsonPacket):
   queryAddUser = """INSERT INTO USERS (USERNAME, PASSWORD) VALUES (%s, %s)"""
@@ -71,6 +72,10 @@ def updatePublicKey():
 def updatelastLogin():
   pass
 
+
+def onNewConnection(userConnection):
+  userConnection.send('Thank you for connecting!'.encode())
+  userConnection.send("(>>Klucz publiczny serwera<<)".encode())
 
 load_dotenv()
 
