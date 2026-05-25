@@ -56,6 +56,22 @@ def registerUser(userConnection,jsonPacket):
       userConnection.send(f'Succesfully registered as {credentials["login"]}!'.encode())
 
 
+#TODO
+# login user then change ip for username
+def updateIP():
+  pass
+
+#TODO
+# login user then change public_key for username
+def updatePublicKey():
+  pass
+
+#TODO
+# after success login update user's last_login
+def updatelastLogin():
+  pass
+
+
 load_dotenv()
 
 dbUrl = os.getenv('DATABASE_URL')
