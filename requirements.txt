@@ -1,6 +1,9 @@
+#cryptography
 dotenv
 #json
 #os
 psycopg2-binary
+#secrets
 #socket
+sympy
 #threading
