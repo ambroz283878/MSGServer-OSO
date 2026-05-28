@@ -10,7 +10,7 @@ from user import User
 def connectionHandler(conn, addr):
   user = User(conn,addr, dbConnection)
   conn.send('Thank you for connecting!'.encode())
-  conn.send(str(user.getPubKey()).encode())
+  conn.send(str(user.getSrvPubKey()).encode())
 
 load_dotenv()
 

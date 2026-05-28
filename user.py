@@ -7,7 +7,7 @@ class User():
         self.__dbConn = dbConn
         self.__conn = connection
         self.__serverKeys = keyExchange.keyGen()
-        self.__onNewConnection()
+        
     def __loginUser(self, jsonPacket):
         queryCheckCredentials = """SELECT * FROM USERS WHERE user = (%s) AND password = (%s) """
         credentials=jsonPacket["properties"]
