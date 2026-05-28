@@ -4,6 +4,7 @@ import os
 import psycopg2
 import socket
 import threading
+import user
 
 def connectionHandler(conn, addr):
   onNewConnection(conn)
@@ -18,6 +19,7 @@ def connectionHandler(conn, addr):
     return(-1)
   action=jsonPacket["action"]
 
+  #lines below need to be refactored into the User class
   match action:
     case "login":
       loginUser(conn,jsonPacket)
