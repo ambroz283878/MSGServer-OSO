@@ -1,0 +1,18 @@
+DROP DATABASE IF EXISTS db1;
+
+CREATE DATABASE db1;
+
+\c db1
+
+CREATE TABLE users (
+    name VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(100),
+    last_login TIMESTAMP,
+    ip VARCHAR(15),
+    public_key VARCHAR(255)
+);
+
+INSERT INTO users (name, password) VALUES
+    ('Admin01', 'elo'),
+    ('Admin02', 'eloMocniejsze'),
+    ('tester', 'hehehe');

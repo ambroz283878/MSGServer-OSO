@@ -1,0 +1,8 @@
+{
+    "action":"login",
+    "properties":
+    {
+        "login":"admin",
+        "password":"secret"
+    }
+}
