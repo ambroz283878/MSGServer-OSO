@@ -1,1 +1,16 @@
-Przenieść funkcje serwera do innego pliku - dla lepszej przejżystości
+Wymagane do projektu
+1. Logowanie
+2. Lista aktywnych i nieaktywnych użytkowników
+3. Komunikacja 1 do 1
+4. Informacja o nieprzesłaniu wiadomości
+
+Rozszerzenia:
+1.1 Zmiana hasła
+
+3.1 Komunikacja 1 do wielu
+
+5. Lokalne przechowywanie wiadomości
+6. Potwierdzenie odebrania wiadomości + retransmisja wiadomości
+7. Logowanie na wielu urządzeniach / przełączanie pomiędzy użytkownikami na różnych urządzeniach (adresach IP)
+8. Mechanizm aktywnej sesji, poprzez pakiety Hello
+9. Powiadomienie o dostępności użytkownika
