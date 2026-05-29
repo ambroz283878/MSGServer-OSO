@@ -2,7 +2,8 @@ import psycopg2
 import keyExchange
 
 class User():
-    def __init__(self, connection, addr, dbConn):
+    def __init__(self,server, connection, addr, dbConn):
+        self.__server = server
         self.__addr = addr
         self.__dbConn = dbConn
         self.__conn = connection
@@ -23,6 +24,7 @@ class User():
                     return -1
                 self.__conn.send(f'Succesfully logged in as {credentials["login"]}!'.encode())
         self.username = credentials["login"]
+        self.__afterLoggedIn()
 
     def __registerUser(self, jsonPacket):
         queryAddUser = """INSERT INTO USERS (name, password) VALUES (%s, %s)"""
@@ -39,6 +41,7 @@ class User():
         
             self.__conn.send(f'Succesfully registered as {credentials["login"]}!'.encode())
         self.username = credentials["login"]
+        self.__afterLoggedIn()
 
     def __updateLastLogin(self):
         queryUpdateLastLoginTime="""UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE name=(%s)"""
@@ -66,4 +69,27 @@ class User():
     
     def setPeerPubKey(self, key):
         self.peerPubKey = key
+    
+    def userAction(self, jsonPacket):
+        try:
+            action = jsonPacket["action"]
+            properties = jsonPacket["properties"]
+        except KeyError:
+            print(f"Received invalid packet from {self.addr}")
+            self.conn.send("Received invalid packet".encode())
         
+        match action:
+            case _:
+                self.conn.send("Invalid action".encode())
+
+    def getConn(self):
+        return self.__conn
+    
+    def getUsername(self):
+        return self.username
+
+    def forwardMessage(self, message):
+        self.__conn.send(message.encode())
+    
+    def __afterLoggedIn(self):
+        self.__server.insertUser(self)
