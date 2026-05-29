@@ -24,9 +24,7 @@ services:
 
   msserv:
     container_name: msgserver
-    build:
-      context: .
-      dockerfile: ../dockerfile
+    image: messserver:latest
     env_file:
       - ../.env      
     ports:
