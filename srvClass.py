@@ -36,6 +36,7 @@ class Server():
             print('Got connection from', addr)
 
             threading.Thread(target=self.connectionHandler,args=(client,addr)).start()
+            threading.Thread(target=self.pingUser).start()
 
     def connectionHandler(self, conn:socket.socket, addr:tuple[str, int]):
         user = User(self,conn,addr, self.dbConnection)
@@ -48,10 +49,15 @@ class Server():
             else:
                 conn.send(make_message(TEXT["invalid_packet"]))
 
-
     def insertUser(self, user:User):
         self.userConnMap[user.getUsername()] = user
 
+    def listAllUsers(self):
+        with self.dbConnection:
+            with self.dbConnection.cursor() as cursor:
+                queryAllUsers = """SELECT name FROM users"""
+                cursor.execute(queryAllUsers)
+        return cursor.fetchall()
 
     def validateJsonPacket(self, msg: str)->Optional[dict[str, Any]]:
         try:
@@ -62,4 +68,5 @@ class Server():
             print(f"msg got: {msg}")
             return None
 
-
+    def pingUser(self):
+        while True        
