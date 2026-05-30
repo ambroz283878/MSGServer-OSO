@@ -5,6 +5,7 @@ TEXT = {
     "welcome": "Thank you for connecting!",
     "ping": "Hello!!!!",
     "invalid_packet": "Wrong Json format!",
+    "invalid_key":"Received JSON with invalid key",
     "register_user_taken": "Username {username} already taken!",
     "register_success": "Succesfully registered as {username}!",
     "login_success": "Succesfully logged in as {username}!",
