@@ -102,12 +102,16 @@ class User():
         return self.username
     
     def __handleMessage(self, jsonPacket):
-        if jsonPacket["properties"]["sender"] != self.username:
+        if jsonPacket["properties"]["sender"] not in [self.getUsername, "Server"]:
             print("Spoofing attack suspected, packet discarded")
             return 1
+        msg=json.dumps(jsonPacket).encode()
         targetUsername = jsonPacket["properties"]["recipient"]
+        if targetUsername == "Client":
+            self.__conn.send(msg)
+            return 0
         target = self.__server.userConnMap[targetUsername].getConn()
-        target.send(jsonPacket.encode())
+        target.send(msg)
 
     def __afterLoggedIn(self):
         self.__server.insertUser(self)
@@ -134,6 +138,9 @@ class User():
             case "register":
                 print("handleRequest register: ", jsonPacket)
                 self.__registerUser(jsonPacket)
+            case "listAllUsers":
+                allUsers = str(self.__server.listAllUsers())
+                self.__conn.send(make_message(content=allUsers,action=ACTION["listAllUsers"]))
             case _:
                 print("handleRequest Unknown: ", jsonPacket)
                 self.forwardMessage(make_message(TEXT["invalid_packet"]))

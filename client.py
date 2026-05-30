@@ -2,8 +2,7 @@ from dotenv import load_dotenv
 import json
 import os
 import socket
-
-
+from server_messages import TEXT, ACTION, make_message
 load_dotenv()
 
 port = int(os.getenv('SRV_PORT'))
@@ -18,12 +17,15 @@ except ConnectionRefusedError:
 
 print (server.recv(1024).decode())
 
-json_packet="""{"action":"login","properties":{"login":"Admin01","password":"elo"}}"""
-# json_packet="""{"action":"register","properties":{"login":"Rassena","password":"elozelo"}}"""
-server.send(json_packet.encode())
-actualJson=json.loads(json_packet)
+user="Admin01"
+passwd="elo"
 
-print("")
+listUsers=make_message(content="",sender=user,recipient="Server",action=ACTION["listAllUsers"])
+login="""{"action":"login", "properties":{"login":"Admin01", "password":"elo"}}""".encode()
+
+# json_packet="""{"action":"register","properties":{"login":"Rassena","password":"elozelo"}}"""
+server.send(login)
+server.send(listUsers)
 
 # while input()!='exit':
 while True:

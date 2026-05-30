@@ -17,7 +17,8 @@ ACTION = {
     "register": "register",
     "message": "message",
     "login": "login",
-    "publicKey": "publicKey"
+    "publicKey": "publicKey",
+    "listAllUsers": "listAllUsers"
 }
 
 def make_message(
