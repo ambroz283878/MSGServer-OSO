@@ -3,12 +3,9 @@ import socket
 import threading
 import time
 from typing import TYPE_CHECKING
-
 import psycopg2
-import keyExchange
-
+#import keyExchange
 import psycopg2.extensions
-
 from server_messages import ACTION, make_message, TEXT
 
 if TYPE_CHECKING:
@@ -21,8 +18,6 @@ class User():
         self.__dbConn = dbConn
         self.__conn = connection
         self.username : str
-
-        threading.Thread(target=self.pingUser).start()
     
     def pingUser(self):
         sleepInterval = 5
@@ -30,12 +25,6 @@ class User():
             self.__conn.send("\nHello!\n".encode())
             time.sleep(sleepInterval)
 
-    #TODO 
-        # this is not secure :/
-        # roddzielić zapytanie
-            # wyszukaj użytkownika -> weź jego hasło
-            # prównaj hasła -> zalogowany/ niezalogowany
-        # dołączyć element szyfrowania
     def __loginUser(self, jsonPacket):
         queryCheckCredentials = """SELECT * FROM USERS WHERE name = (%s) AND password = (%s) """
         credentials=jsonPacket["properties"]
@@ -53,8 +42,6 @@ class User():
         self.username = credentials["login"]
         self.__afterLoggedIn()
 
-    #TODO 
-        # this is not secure :/ 
     def __registerUser(self, jsonPacket):
         queryAddUser = """INSERT INTO USERS (name, password) VALUES (%s, %s)"""
         credentials=jsonPacket["properties"]
@@ -88,16 +75,13 @@ class User():
                 print(f"""Executing:\n{queryUpdateLastKnownIP}\nuser: {self.username}\naddr: {self.__addr}""")
                 cursor.execute(queryUpdateLastKnownIP, (self.__addr[0], self.username))
     
-    def __updatePulicKey(self):
+    def __updatePulicKey(self, key):
         queryUpdatePubKey = """UPDATE users SET public_key = (%s) WHERE name=(%s)"""
         with self.__dbConn:
             with self.__dbConn.cursor() as cursor:
-                print(f"""Executing:\n{queryUpdatePubKey}\nuser: {self.username}\npubKey: {self.peerPubKey}""")
-                cursor.execute(queryUpdatePubKey, (self.peerPubKey, self.username))
+                print(f"""Executing:\n{queryUpdatePubKey}\nuser: {self.username}\npubKey: {key}""")
+                cursor.execute(queryUpdatePubKey, (key, self.username))
         
-    def setPeerPubKey(self, key):
-        self.peerPubKey = key    
-
     def getConn(self):
         return self.__conn
     
@@ -126,9 +110,9 @@ class User():
         self.__server.insertUser(self)
         self.__updateLastLogin()
         self.__updateIP()
+        #self.__updatePulicKey()
+        threading.Thread(target=self.pingUser).start()
 
-    #TODO
-        # Maybe it will better inside srvClass.
     def handleRequest(self,jsonPacket:dict):
         try:
             action = jsonPacket["action"]
