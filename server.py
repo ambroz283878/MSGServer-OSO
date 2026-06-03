@@ -1,12 +1,12 @@
-from typing import Any, Optional
-
 from dotenv import load_dotenv
 import json
+import keyExchange
 import os
 import psycopg2
 import socket
-import threading
 from server_messages import ACTION, make_message, TEXT
+import threading
+from typing import Any, Optional
 from user import User
 
 class Server():
@@ -17,6 +17,7 @@ class Server():
         self.maxClientCount = int(os.getenv('SRV_MAX_CONN'))
         self.dbConnection = psycopg2.connect(self.dbUrl)
         self.userConnMap = {}
+        self.keys = keyExchange.keyGen()
 
         print(f"Port: {self.port}\nMax klientów: {self.maxClientCount}")
 

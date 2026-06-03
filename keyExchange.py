@@ -15,7 +15,7 @@ def keyGen():
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    return {"privKey":private_bytes, "pubKey":public_bytes}
+    return {"priv":private_bytes, "pub":public_bytes}
 
 def dhExchange(privKey,peerPubKey):
     shared_key = privKey.exchange(peerPubKey)
