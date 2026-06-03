@@ -27,6 +27,7 @@ login=("""{"action":"login", "properties":{"login":"%s", "password":"%s"}}""" % 
 listOnline=make_message(content="",sender="Client",recipient="Server", action=ACTION["listOnlineUsers"])
 msgPiwo=make_message(content="Piwo", sender=user, recipient="tester", action=ACTION["message"])
 # json_packet="""{"action":"register","properties":{"login":"Rassena","password":"elozelo"}}"""
+ping=make_message(content=TEXT["ping"],sender="Client",recipient="Server",action=ACTION["ping"])
 server.send(login)
 print(server.recv(1024).decode())
 sleep(1)
@@ -49,9 +50,11 @@ for onlineUser in onlineUsers:
 
 
 # while input()!='exit':
+server.send(ping)
 while True:
     msg=server.recv(1024).decode()
     print(msg+"\n")
     server.send(input().encode())
+    server.send(ping)
 
 server.close()
