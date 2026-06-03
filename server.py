@@ -41,13 +41,17 @@ class Server():
     def connectionHandler(self, conn:socket.socket, addr:tuple[str, int]):
         user = User(self,conn,addr, self.dbConnection)
         conn.send(make_message(TEXT["welcome"]))
-        #conn.send(make_message(str(user.getSrvPubKey()),action=ACTION["publicKey"]))
+        conn.send(make_message(str(self.keys["pub"]),action=ACTION["sendPubKey"]))
         while True:
-            msg = self.validateJsonPacket(conn.recv(1024).decode())
-            if msg:
-                user.handleRequest(msg)
-            else:
-                conn.send(make_message(TEXT["invalid_packet"]))
+            try:
+                msg = self.validateJsonPacket(conn.recv(1024).decode())
+                if msg:
+                    user.handleRequest(msg)
+                else:
+                    conn.send(make_message(TEXT["invalid_packet"]))
+            except (BrokenPipeError, ConnectionResetError):
+                print("Closing connection")
+                break
 
     def insertUser(self, user:User):
         self.userConnMap[user.getUsername()] = user
