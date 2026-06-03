@@ -1,4 +1,4 @@
-from srvClass import Server
+from server import Server
 
 server = Server()
 

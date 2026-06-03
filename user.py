@@ -9,7 +9,7 @@ import psycopg2.extensions
 from server_messages import ACTION, make_message, TEXT
 
 if TYPE_CHECKING:
-    from srvClass import Server
+    from server import Server
 
 class User():
     def __init__(self,server:"Server", connection:socket.socket, addr:tuple[str, int], dbConn:psycopg2.extensions.connection):
