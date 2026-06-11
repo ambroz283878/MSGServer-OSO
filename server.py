@@ -51,6 +51,7 @@ class Server():
                     conn.send(make_message(TEXT["invalid_packet"]))
             except (BrokenPipeError, ConnectionResetError):
                 print("Closing connection")
+                self.userConnMap.pop(user.getUsername)
                 break
 
     def insertUser(self, user:User):
