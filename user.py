@@ -17,7 +17,7 @@ class User():
         self.__addr = addr
         self.__dbConn = dbConn
         self.__conn = connection
-        self.username : str
+        self.username : str = "Client"
         self.pingStatusOK = threading.Event()
     
     def pingUser(self):
@@ -91,7 +91,7 @@ class User():
         return self.username
     
     def __handleMessage(self, jsonPacket):
-        if jsonPacket["properties"]["sender"] not in [self.getUsername()]:
+        if jsonPacket["properties"]["sender"] not in [self.getUsername(), "Client"]:
             print("Spoofing attack suspected, packet discarded")
             self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=self.username),recipient=self.getUsername()))
             # print(jsonPacket["properties"]["sender"], self.getUsername())
