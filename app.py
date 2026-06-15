@@ -47,7 +47,7 @@ def serverRequest(val: str):
 
 def authCheck():
     if not session["validAuth"]:
-        return redirect(url_for("/"))
+        return redirect(url_for("index"))
 
 def confirmAuth():
     session["validAuth"]=True
@@ -59,9 +59,15 @@ threading.Thread(target=ping,args=()).start()
 @app.get("/")
 def index():
     return render_template("index.html")
+@app.get("/logout")
+def logout():
+    session["validAuth"]=False
+    return redirect(url_for("index"))
 @app.route("/login", methods=['GET','POST'])
 def login():
     if request.method == 'GET':
+        if session["validAuth"]:
+            return redirect(url_for("welcome"))
         return render_template('login.html')
     username = request.form['user']
     password = request.form['passwd']
@@ -90,6 +96,8 @@ def login():
 @app.route("/register", methods=['GET','POST'])
 def register():
     if request.method == 'GET':
+        if session["validAuth"]:
+            return redirect(url_for("welcome"))
         return render_template('register.html')
     username = request.form['user']
     password = request.form['passwd']
