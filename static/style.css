@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+
+:root {
+  --bg-image: url('images/bg.jpg');
+}
+
+.hero-bg {
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+}
+
+.blurred-bg {
+  position: relative;
+}
+
+.blurred-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px) brightness(0.7);
+  z-index: 0;
+}
+
+.blurred-bg > div {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-link {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover {
+  transform: translateX(8px);
+}
+
+.tile {
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.tile:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.7);
+}
