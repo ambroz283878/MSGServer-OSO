@@ -53,7 +53,7 @@ def confirmAuth():
     session["validAuth"]=True
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SS_KEY')
+app.secret_key = os.urandom(32)
 threading.Thread(target=ping,args=()).start()
 
 @app.get("/")
