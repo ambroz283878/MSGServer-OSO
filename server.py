@@ -53,7 +53,7 @@ class Server():
                 print("Closing connection")
                 try:
                     self.userConnMap.pop(user.getUsername())
-                except AttributeError: #if a user didn't yet log in, username would be null and cause this error
+                except (AttributeError, KeyError): #if a user didn't yet log in, username would be null and cause this error
                     pass
                 exit(-1)
 
