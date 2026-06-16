@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSO5 • {% block title %}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="hero-bg text-zinc-200 min-h-screen font-sans">
+
+<header class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
+  <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
+    <div class="flex items-center gap-x-3">
+      <div class="w-9 h-9 bg-gradient-to-br from-red-600 via-orange-300 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl leading-none pt-0.5">igg</div>
+      <span class="font-bold text-2xl tracking-tighter text-white">Centrum Wszechświata</span>
+    </div>
+    <div class="flex items-center gap-x-3">
+      <div class="text-right">
+        {% block header_user %}
+        <div class="text-sm font-medium">Nie zalogowano</div>
+        <div class="text-xs text-red-400">Status: offline</div>
+        {% endblock %}
+      </div>
+      <div class="w-9 h-9 bg-gradient-to-br from-blue-500 via-orange-300 to-red-600 rounded-2xl flex items-center justify-center text-neutral-900 text-2xl font-semibold">
+        <i class="fa-solid fa-circle-user"></i>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

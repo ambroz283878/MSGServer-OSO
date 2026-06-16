@@ -1,48 +1,27 @@
-<!DOCTYPE html>
-<html lang="pl" class="scroll-smooth dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeonForge • Welcome</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="hero-bg text-zinc-200 min-h-screen font-sans">
+{% extends "base.html" %}
 
-<!-- HEADER -->
-<header class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
-  <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
-    <div class="flex items-center gap-x-3">
-      <div class="w-9 h-9 bg-gradient-to-br from-red-600 via-orange-300 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-1xl leading-none pt-0.5">igg</div>
-      <div>
-        <span class="font-bold text-2xl tracking-tighter text-white">Centrum Wszechświata</span>
-      </div>
-    </div>
-    <div class="flex items-center gap-x-8">
-      <div class="flex items-center gap-x-3">
-        <div class="text-right">
-          <div class="text-sm font-medium">{{ USER }}</div>
-          <div class="text-xs text-green-400">Status: online</div>
-          <a href="{{ url_for('logout') }}">Wyloguj się</a>
-        </div>
-        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 via-orange-300 to-red-600 rounded-2xl flex items-center justify-center text-neutral-900 text-2xl font-semibold"><i class="fa-solid fa-circle-user"></i></div>
-      </div>
-    </div>
-  </div>
-</header>
+{% block title %}Witaj, {{ USER }}{% endblock %}
 
+{% block header_user %}
+<div class="text-sm font-medium">{{ USER }}</div>
+<div class="text-xs text-green-400">Status: online</div>
+<a href="{{ url_for('logout') }}" class="text-xs text-zinc-400 hover:text-zinc-200">Wyloguj się</a>
+{% endblock %}
+
+{% block content %}
 <div class="flex justify-center items-center py-80">
-  <!-- FORM HOLDER -->
-  <div class="bg-zinc-600/70 border-2 border-zinc-200/80 rounded-3xl p-8 flex justify-center items-center">
-    <ul>
-      <li><h1 class="w-full h-9 text-white font-bold py-2 mt-7">Successfully logged in as {{ USER }}</h1></li>
-      <li><h1 class="w-full h-9 text-white font-bold py-2 mt-7"><a href="{{ url_for('message') }}">MAILBOX</a></h1></li>
-      <li><h1 class="w-full h-9 text-white font-bold py-2 mt-7"><a href="{{ url_for('logout') }}">LOGOUT</a></h1>
-      </h1>
-    </ul>
-    </div>
+  <div class="bg-zinc-600/70 border-2 border-zinc-200/80 rounded-3xl p-8 flex flex-col items-center gap-4">
+    <h1 class="text-white font-bold text-xl">Zalogowano jako {{ USER }}</h1>
+    <a href="{{ url_for('message') }}">
+      <button class="w-48 h-10 bg-indigo-700 hover:bg-indigo-600 rounded-xl text-white font-bold transition">
+        <i class="fa-solid fa-inbox mr-2"></i>Skrzynka
+      </button>
+    </a>
+    <a href="{{ url_for('logout') }}">
+      <button class="w-48 h-10 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-white font-bold transition">
+        Wyloguj się
+      </button>
+    </a>
+  </div>
 </div>
-
-</body>
-</html>
+{% endblock %}
