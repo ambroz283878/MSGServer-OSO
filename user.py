@@ -47,7 +47,12 @@ class User():
     def __logoutUser(self, jsonPacket):
         user=jsonPacket["properties"]["login"]
         self.__server.userConnMap.pop(user)
-        #self.__conn.close()
+        self.__conn.send(make_message(
+            content="Logout successful",
+            action=ACTION["logout"],
+            recipient=user
+        ))
+        self.__conn.close()
 
     def __registerUser(self, jsonPacket):
         queryAddUser = """INSERT INTO USERS (name, password) VALUES (%s, %s)"""
