@@ -45,7 +45,7 @@ class User():
         self.__afterLoggedIn()
 
     def __logoutUser(self, jsonPacket):
-        user=jsonPacket["properites"]["login"]
+        user=jsonPacket["properties"]["login"]
         self.__server.userConnMap.pop(user)
         #self.__conn.close()
 
