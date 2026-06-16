@@ -46,14 +46,14 @@ def make_message(
             }).encode()
         
         case "ping":
-            return json.dups({
+            return json.dumps({
                 "action": ACTION["ping"],
                 "properties": {
                     "sender": sender,
                     "recipient": recipient,
                     "content": TEXT["ping"]
                 }
-            })
+            }).encode()
         case _:
             return json.dumps({
                 "action": action,
