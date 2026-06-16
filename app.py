@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session
+from functools import wraps
 from hashlib import sha256
 import json
 import os
@@ -46,8 +47,19 @@ def serverRequest(val: str):
     return rawJson["properties"]["content"]
 
 def authCheck():
-    if not session["validAuth"]:
-        return redirect(url_for("index"))
+    try: 
+        status = session["validAuth"]
+    except KeyError:
+        return False
+    return status
+
+def authRedirect(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not authCheck():
+            return redirect(url_for("index"))
+        return f(*args, **kwargs)
+    return decorated
 
 def confirmAuth():
     session["validAuth"]=True
@@ -59,14 +71,16 @@ threading.Thread(target=ping,args=()).start()
 @app.get("/")
 def index():
     return render_template("index.html")
+
 @app.get("/logout")
 def logout():
     session["validAuth"]=False
     return redirect(url_for("index"))
+
 @app.route("/login", methods=['GET','POST'])
 def login():
     if request.method == 'GET':
-        if session["validAuth"]:
+        if authCheck():
             return redirect(url_for("welcome"))
         return render_template('login.html')
     username = request.form['user']
@@ -96,7 +110,7 @@ def login():
 @app.route("/register", methods=['GET','POST'])
 def register():
     if request.method == 'GET':
-        if session["validAuth"]:
+        if authCheck():
             return redirect(url_for("welcome"))
         return render_template('register.html')
     username = request.form['user']
@@ -129,12 +143,13 @@ def register():
     return redirect(url_for("welcome"))
 
 @app.route("/welcome", methods=['GET','POSt'])
+@authRedirect
 def welcome():
-    authCheck()
     return render_template("welcome.html",USER=session["username"])
+
 @app.route("/message", methods=['GET','POST'])
+@authRedirect
 def message():
-    authCheck()
     if request.method == 'POST':
         recipient = request.form['user']
         msg = request.form['msg']
@@ -142,6 +157,16 @@ def message():
     onlineUsers=eval(serverRequest(ACTION["listOnlineUsers"]))
     allUsers=eval(serverRequest(ACTION["listAllUsers"]))
     return render_template("message.html", USERNAME=session["username"], online_users=onlineUsers,all_users=allUsers,messages=[])
+
 @app.post("/send_message")
+@authRedirect
 def send_message():
     pass
+
+if __name__ == '__main__':
+    app.run(
+        host=os.getenv('FLASK_HOST', '0.0.0.0'),
+        port=int(os.getenv('FLASK_PORT', 5000)),
+        debug=True,
+        use_reloader=False
+    )
