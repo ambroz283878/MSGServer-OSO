@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM base AS run
 
-COPY run.py app.py keyExchange.py server.py user.py server_messages.py ./
+COPY run.py app.py keyExchange.py server.py server_messages.py ./
 COPY --from=dep /install /usr/local
 COPY --from=dep /app /app
 
