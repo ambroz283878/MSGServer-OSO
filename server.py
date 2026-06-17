@@ -49,8 +49,8 @@ class Server():
                     user.handleRequest(msg)
                 else:
                     conn.send(make_message(TEXT["invalid_packet"]))
-            except (BrokenPipeError, ConnectionResetError):
-                print("Closing connection")
+            except (BrokenPipeError, ConnectionResetError,OSError):
+                print(TEXT["server_close_connection"].format(user=f"{user.getUsername()} {addr}"))
                 try:
                     self.userConnMap.pop(user.getUsername())
                 except (AttributeError, KeyError): #if a user didn't yet log in, username would be null and cause this error

@@ -12,8 +12,13 @@ TEXT = {
     "login_fail": "Failed login attempt into account {username} from {addr}",
     "login_bad_password": "Bad password!",
     "login_already_online": "Failed login attempt into account {username}, already logged in",
+    "logout_success": "Succesfully logged out as {username}!",
     "user_offline": "Recipient {username} is offline",
-    "user_wrong_sender": "Sender {username} is not accepted by Server!"
+    "user_wrong_sender": "Sender {username} is not accepted by Server!",
+    "BrokenPipeError": "Unable to send respond - Broken Pipe. Response:{response}",
+    "server_close_connection": "Closing connection: {user}",
+    "temp_response": "You sneaky bastard... -> {reason}",
+
 
 }
 ACTION = {

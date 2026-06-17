@@ -53,10 +53,11 @@ class User():
         return username in self.__server.listOnlineUsers()
 
     def __logoutUser(self, jsonPacket):
-        user=jsonPacket["properties"]["login"]
+        print("I've got: ",jsonPacket)
+        user=self.getUsername()
         self.__server.userConnMap.pop(user)
         self.__conn.send(make_message(
-            content="Logout successful",
+            content=TEXT["logout_success"].format(username=user),
             action=ACTION["logout"],
             recipient=user
         ))
@@ -109,9 +110,9 @@ class User():
         return self.username
     
     def __handleMessage(self, jsonPacket):
-        if jsonPacket["properties"]["sender"] not in [self.getUsername(), "Client"]:
-            print("Spoofing attack suspected, packet discarded")
-            self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=self.username),recipient=self.getUsername()))
+        if jsonPacket["properties"]["sender"] not in [self.getUsername()]:
+            print("Spoofing attack suspected, packet discarded: /n", TEXT["user_wrong_sender"].format(username=self.getUsername()))
+            self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=self.getUsername()),recipient=self.getUsername()))
             # print(jsonPacket["properties"]["sender"], self.getUsername())
             return 1
         
@@ -155,6 +156,8 @@ class User():
                 print("handleRequest message: ", jsonPacket)
                 self.__handleMessage(jsonPacket)
             case "logout":
+                #TODO:
+                    # logout w sumie nie potrzebuje info o nazwie uzytkownika, on jest samym soba
                 print("handleRequest logout:", jsonPacket)
                 self.__logoutUser(jsonPacket)
             case "register":
@@ -173,4 +176,4 @@ class User():
             try:
                 self.__conn.send(response)
             except BrokenPipeError:
-                print(f"Unable to send respond - Broken Pipe. Response:{response.decode()}")
+                print(TEXT["BrokenPipeError"].format(response=response.decode()))
