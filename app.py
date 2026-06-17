@@ -246,7 +246,7 @@ def message():
         send_and_receive(content=msg,action=ACTION["message"],sender=session["username"],recipient=recipient)
     onlineUsers=ast.literal_eval(serverRequest(ACTION["listOnlineUsers"]))
     allUsers=ast.literal_eval(serverRequest(ACTION["listAllUsers"]))
-    offlineUsers=set(onlineUsers).difference(set(allUsers))
+    offlineUsers=set(allUsers).difference(set(onlineUsers))
     return render_template("message.html", USERNAME=session["username"], online_users=onlineUsers,offlineUsers=offlineUsers,messages=[])
 
 @app.post("/send_message")
