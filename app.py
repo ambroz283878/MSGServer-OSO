@@ -222,10 +222,13 @@ def register():
     try:
         result = response["properties"]["content"]
     except KeyError:
-        return redirect(url_for("register"))
+        session.pop("username", None)
+        return redirect(url_for("login"))
     if result[0] != "S":
-        return redirect(url_for("register"))
-    session["username"]=username
+        session.pop("username", None)
+        return redirect(url_for("login"))
+    
+    #session["username"]=username
     confirmAuth(username)
     return redirect(url_for("welcome"))
 
