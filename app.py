@@ -66,7 +66,7 @@ def ping(username: str):
                 packet = make_message(content="", action=ACTION["ping"], 
                                       sender=username, recipient="Server", mode="ping")
                 srv.sendall(packet)
-                srv.recv(1024)
+                #srv.recv(1024) - serwer nie odsyła nic po otrzymaniu ping, wątek by się zawiesił lub odebrał niepoprawny pakiet
             sleep(5)
         except Exception:
             log.warning(f"Ping failed for {username}")
@@ -97,9 +97,8 @@ def send_and_receive(content: str, action: str = ACTION["message"],
         response = srv.recv(1024)
         return json.loads(response.decode())
 
-
 def serverRequest(val: str):
-    rawJson = send_and_receive(content="", action=val, mode=val)
+    rawJson = send_and_receive(content="", action=val, mode="Default")
     return rawJson["properties"]["content"]
 
 def authCheck():
@@ -139,18 +138,23 @@ def index():
 def logout():
     username = session.get("username")
     session["validAuth"] = False
-    
-    try:
-        serverRequest("logout")
-    except Exception as e:
-        log.warning(f"Logout error: {e}")
-    finally:
-        # Zamknij i usuń socket tego użytkownika
-        if username and username in user_connections:
+    session.pop("username", None)
+
+    if username and username in user_connections:
+        try:
+            srv = user_connections[username]
+            lck = user_locks.get(username, threading.Lock())
+            with lck:
+                packet = make_message(content="", action=ACTION["logout"],
+                                      sender=username, recipient="Server")
+                srv.sendall(packet)
+        except Exception as e:
+            log.warning(f"Logout send error: {e}")
+        finally:
             user_connections[username].close()
             del user_connections[username]
             del user_locks[username]
-    
+
     return redirect(url_for("index"))
 
 @app.route("/login", methods=['GET','POST'])
@@ -166,6 +170,7 @@ def login():
     if (password == ""):
         return render_template('login.html', PASSWD_ERR='Enter passwd', PREV_USERNAME=username)
     
+    session["username"] = username
     get_server(username)  # inicjalizuje socket
     
     passwdHash = sha256(password.encode('utf-8')).hexdigest()
@@ -179,10 +184,13 @@ def login():
     try:
         result = response["properties"]["content"]
     except KeyError:
+        session.pop("username", None)
         return redirect(url_for("login"))
     if result[0] != "S":
+        session.pop("username", None)
         return redirect(url_for("login"))
-    session["username"]=username
+    
+    #session["username"]=username
     confirmAuth(username)
     return redirect(url_for("welcome"))
 
@@ -233,8 +241,8 @@ def message():
         recipient = request.form['user']
         msg = request.form['msg']
         send_and_receive(content=msg,action=ACTION["message"],sender=session["username"],recipient=recipient)
-    onlineUsers=eval(serverRequest(ACTION["listOnlineUsers"]))
-    allUsers=eval(serverRequest(ACTION["listAllUsers"]))
+    onlineUsers=ast.literal_eval(serverRequest(ACTION["listOnlineUsers"]))
+    allUsers=ast.literal_eval(serverRequest(ACTION["listAllUsers"]))
     return render_template("message.html", USERNAME=session["username"], online_users=onlineUsers,all_users=allUsers,messages=[])
 
 @app.post("/send_message")
