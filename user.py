@@ -35,7 +35,7 @@ class User():
         pingInterval = 15
         while self.pingStatusOK.wait(pingInterval):
             self.pingStatusOK.clear()
-        log.warning("pingUser, closing connection user=%s addr=%s", self.username, self.__addr)
+        log.warning("pingUser, closing connection user=%s addr=%s:%s", self.username, self.__addr[0], self.__addr[1])
         self.__conn.close()
 
     def __loginUser(self, jsonPacket):
@@ -49,7 +49,7 @@ class User():
                 if result is None:
                     self.__conn.send(make_message(TEXT["login_bad_password"],action=ACTION["login"]))
                     # self.__conn.close()
-                    log.warning(TEXT["login_fail"].format(username=credentials["login"],addr=self.__addr))
+                    log.warning(TEXT["login_fail"].format(username=credentials["login"],addr=f"{self.__addr[0]}:{self.__addr[1]}"))
                     return -1
                 if self.__checkAlreadyLogged(credentials["login"]): 
                     self.__conn.send(make_message(TEXT["login_already_online"].format(username=credentials["login"]),action=ACTION["login"]))
@@ -121,13 +121,13 @@ class User():
         return self.username
     
     def __isSpoofing(self,jsonPacket) -> bool:
-        log.debug("Check Spoofing: %s != %s",jsonPacket["properties"]["sender"],self.getUsername() )
+        log.debug("Check Spoofing: %s as %s",self.getUsername(),jsonPacket["properties"]["sender"] )
         return jsonPacket["properties"]["sender"] != self.getUsername()
 
     def __handleMessage(self, jsonPacket):
         if self.__isSpoofing(jsonPacket):
             log.warning(TEXT["server_spoofing"].format(method="__handleMessage"))
-            log.warning(TEXT["user_wrong_sender"].format(username=self.getUsername()))
+            log.warning(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]))
             self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]),recipient=self.getUsername()))
             return 1
         
@@ -154,7 +154,7 @@ class User():
             action = jsonPacket["action"]
             properties = jsonPacket["properties"]
         except KeyError:
-            log.warning(f"Key Error: Received invalid packet from {self.__addr}")
+            log.warning(f"Key Error: Received invalid packet from {f"{self.__addr[0]}:{self.__addr[1]}"}")
             self.__conn.send(make_message(TEXT["invalid_key"]))
             action = "error"
         #if action !="ping":
@@ -191,7 +191,7 @@ class User():
             try:
                 if self.__isSpoofing(jsonPacket):
                     log.warning("%s is spoofing: %s",self.getUsername(), jsonPacket)
-                    self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=self.getUsername()),recipient=self.getUsername()))
+                    self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]),recipient=self.getUsername()))
                 else:
                     log.debug("msg: %s", jsonPacket)
                     log.debug("response: %s", response)

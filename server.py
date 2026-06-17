@@ -64,7 +64,7 @@ class Server():
                 else:
                     conn.send(make_message(TEXT["invalid_packet"]))
             except (BrokenPipeError, ConnectionResetError,OSError):
-                log.warning(TEXT["server_close_connection"].format(user=f"{user.getUsername()} {addr}"))
+                log.warning(TEXT["server_close_connection"].format(user=f"{user.getUsername()} {addr[0]}:{addr[1]}"))
                 try:
                     self.userConnMap.pop(user.getUsername())
                 except (AttributeError, KeyError): #if a user didn't yet log in, username would be null and cause this error
@@ -86,7 +86,7 @@ class Server():
                 return [row[0] for row in cursor.fetchall()]
             
     def listOnlineUsers(self) -> list[str]:
-        return sorted(self.userConnMap.keys())
+        return sorted(list(self.userConnMap.keys()))
 
 
     def validateJsonPacket(self, msg: str)->Optional[dict[str, Any]]:
