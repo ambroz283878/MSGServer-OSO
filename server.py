@@ -162,21 +162,21 @@ class User():
         response = None
         match action:
             case "ping":
-                log.debug("Received PING", jsonPacket)
+                log.debug("Received PING: %s", jsonPacket)
                 self.pingStatusOK.set()
             case "login":
-                log.info("handleRequest Login: ", jsonPacket)
+                log.debug("handleRequest Login: %s", jsonPacket)
                 self.__loginUser(jsonPacket)
             case "message":
-                log.info("handleRequest message: ", jsonPacket)
+                log.debug("handleRequest message: %s", jsonPacket)
                 self.__handleMessage(jsonPacket)
             case "logout":
                 #TODO:
                     # logout w sumie nie potrzebuje info o nazwie uzytkownika, on jest samym soba
-                log.info("handleRequest logout:", jsonPacket)
+                log.debug("handleRequest logout: %s", jsonPacket)
                 self.__logoutUser(jsonPacket)
             case "register":
-                log.info("handleRequest register: ", jsonPacket)
+                log.debug("handleRequest register: %s", jsonPacket)
                 self.__registerUser(jsonPacket)
             case "listAllUsers":
                 allUsers = str(self.__server.listAllUsers())
@@ -185,7 +185,7 @@ class User():
                 onlineUsers = str(self.__server.listOnlineUsers())
                 response = make_message(content=onlineUsers,recipient=self.getUsername(),action=ACTION["listOnlineUsers"])
             case _:
-                log.info("handleRequest Unknown: ", jsonPacket)
+                log.debug("handleRequest Unknown: %s", jsonPacket)
                 response = make_message(TEXT["invalid_packet"])
         if response is not None:
             try:
