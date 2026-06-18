@@ -113,7 +113,23 @@ class User():
             with self.__dbConn.cursor() as cursor:
                 log.debug(f"""Executing:\n{queryUpdatePubKey}\nuser: {self.username}\npubKey: {key}""")
                 cursor.execute(queryUpdatePubKey, (key, self.username))
-        
+                self.__conn.send(make_message(key,action=ACTION["setPubKey"],recipient=self.username))
+
+
+
+    def __getPulicKey(self, user):
+        queryGetPubKey = """SELECT public_key FROM USERS WHERE name = (%s)"""
+        with self.__dbConn:
+            with self.__dbConn.cursor() as cursor:
+                log.debug(f"""Executing:\n{queryGetPubKey}\nuser: {user}""")
+                cursor.execute(queryGetPubKey, (user,))
+                result = cursor.fetchone()
+                if result is None:
+                    self.__conn.send(make_message(TEXT["db_public_key_issue"].format(user=user),action=ACTION["fetchPubKey"],recipient=self.username))
+                    log.warning("%s from %s %s:%s", TEXT["db_public_key_issue"].format(user=user), self.username, self.__addr[0],self.__addr[1])
+                    return -1
+                self.__conn.send(make_message(result[0],action=ACTION["fetchPubKey"],recipient=self.username))
+
     def getConn(self):
         return self.__conn
     
@@ -121,15 +137,15 @@ class User():
         return self.username
     
     def __isSpoofing(self,jsonPacket) -> bool:
-        log.debug("Check Spoofing: %s as %s",self.getUsername(),jsonPacket["properties"]["sender"] )
+        log.debug("Check Spoofing: %s as %s : %s",self.getUsername(),jsonPacket["properties"]["sender"],jsonPacket["properties"]["sender"] != self.getUsername() )
         return jsonPacket["properties"]["sender"] != self.getUsername()
 
     def __handleMessage(self, jsonPacket):
-        if self.__isSpoofing(jsonPacket):
-            log.warning(TEXT["server_spoofing"].format(method="__handleMessage"))
-            log.warning(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]))
-            self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]),recipient=self.getUsername()))
-            return 1
+        # if self.__isSpoofing(jsonPacket):
+        #     log.warning(TEXT["server_spoofing"].format(method="__handleMessage"))
+        #     log.warning(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]))
+        #     self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]),recipient=self.getUsername()))
+        #     return 1
         
         msg=json.dumps(jsonPacket).encode()
         targetUsername = jsonPacket["properties"]["recipient"]
@@ -161,43 +177,54 @@ class User():
         
         handleRequest_log_str = f"handleRequest {action} from {self.username} {self.__addr[0]}:{self.__addr[1]} : {jsonPacket} "
         
-        match action:
-            case "ping":
-                log.debug(handleRequest_log_str)
-                self.pingStatusOK.set()
-            case "login":
-                log.debug(handleRequest_log_str)
-                self.__loginUser(jsonPacket)
-            case "message":
-                log.debug(handleRequest_log_str)
-                self.__handleMessage(jsonPacket)
-            case "logout":
-                log.debug(handleRequest_log_str)
-                self.__logoutUser(jsonPacket)
-            case "register":
-                log.debug(handleRequest_log_str)
-                self.__registerUser(jsonPacket)
-            case "listAllUsers":
-                log.debug(handleRequest_log_str)
-                allUsers = str(self.__server.listAllUsers())
-                response = make_message(content=allUsers,recipient=self.getUsername(),action=ACTION["listAllUsers"])
-            case "listOnlineUsers":
-                log.debug(handleRequest_log_str)
-                onlineUsers = str(self.__server.listOnlineUsers())
-                response = make_message(content=onlineUsers,recipient=self.getUsername(),action=ACTION["listOnlineUsers"])
-            case _:
-                log.debug("Unknown %s", handleRequest_log_str)
-                response = make_message(TEXT["invalid_packet"])
-        
+        action_login_req = ["message","listAllUsers","listOnlineUsers","setPubKey","sendPubKey","fetchPubKey"]
+
+        if action in action_login_req and self.__isSpoofing(jsonPacket):
+            log.warning("%s is spoofing: %s",self.getUsername(), jsonPacket)
+            self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=properties["sender"]),recipient=self.getUsername()))
+        else:
+            match action:
+                case "ping":
+                    log.debug(handleRequest_log_str)
+                    self.pingStatusOK.set()
+                case "login":
+                    log.debug(handleRequest_log_str)
+                    self.__loginUser(jsonPacket)
+                case "logout":
+                    log.debug(handleRequest_log_str)
+                    self.__logoutUser(jsonPacket)
+                case "register":
+                    log.debug(handleRequest_log_str)
+                    self.__registerUser(jsonPacket)
+
+
+                case "setPubKey":
+                    log.debug(handleRequest_log_str)
+                    self.__updatePulicKey(properties["content"])
+                case "fetchPubKey":
+                    log.debug(handleRequest_log_str)
+                    self.__getPulicKey(properties["content"])
+                case "message":
+                    log.debug(handleRequest_log_str)
+                    self.__handleMessage(jsonPacket)
+                case "listAllUsers":
+                    log.debug(handleRequest_log_str)
+                    allUsers = str(self.__server.listAllUsers())
+                    response = make_message(content=allUsers,recipient=self.getUsername(),action=ACTION["listAllUsers"])
+                case "listOnlineUsers":
+                    log.debug(handleRequest_log_str)
+                    onlineUsers = str(self.__server.listOnlineUsers())
+                    response = make_message(content=onlineUsers,recipient=self.getUsername(),action=ACTION["listOnlineUsers"])
+                
+                case _:
+                    log.debug("Unknown %s", handleRequest_log_str)
+                    response = make_message(TEXT["invalid_packet"])
+            
         if response is not None:
             try:
-                if self.__isSpoofing(jsonPacket):
-                    log.warning("%s is spoofing: %s",self.getUsername(), jsonPacket)
-                    self.__conn.send(make_message(TEXT["user_wrong_sender"].format(username=jsonPacket["properties"]["sender"]),recipient=self.getUsername()))
-                else:
-                    log.debug("msg: %s", jsonPacket)
-                    log.debug("response: %s", response)
-                    self.__conn.send(response)
+                log.debug("msg: %s", jsonPacket)
+                log.debug("response: %s", response)
+                self.__conn.send(response)
 
             except BrokenPipeError:
                 log.warning(TEXT["BrokenPipeError"].format(response=response.decode()))

@@ -18,6 +18,8 @@ TEXT = {
     "BrokenPipeError": "Unable to send respond - Broken Pipe. Response:{response}",
     "server_close_connection": "Closing connection: {user}",
     "server_spoofing": "Spoofing attack suspected in {method}, packet discarded",
+    "db_public_key_success": "{user} public key set as {key}",
+    "db_public_key_issue": "Cannot get {user} public key",
     "temp_response": "You sneaky bastard... -> {reason}",
 
 
