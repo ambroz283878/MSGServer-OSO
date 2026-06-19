@@ -11,6 +11,9 @@ import threading
 from typing import Any, Optional
 import logging
 
+import bcrypt
+
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
@@ -40,14 +43,20 @@ class User():
             self.pingStatusOK.clear()
 
     def __loginUser(self, jsonPacket):
-        queryCheckCredentials = """SELECT * FROM USERS WHERE name = (%s) AND password = (%s) """
+        queryCheckCredentials = """SELECT password FROM USERS WHERE name = (%s) """
         credentials=jsonPacket["properties"]
         with self.__dbConn:
             with self.__dbConn.cursor() as cursor:
                 log.debug(f"""Executing:\n{queryCheckCredentials}\nlogin: {credentials["login"]}\npassword: {credentials["password"]}""")
-                cursor.execute(queryCheckCredentials, (credentials["login"], credentials["password"]))
+                cursor.execute(queryCheckCredentials, (credentials["login"],))
                 result = cursor.fetchone()
+                print(f"result {result}")
                 if result is None:
+                    self.__conn.send(make_message(TEXT["login_bad_password"],action=ACTION["login"]))
+                    # self.__conn.close()
+                    log.warning(TEXT["login_fail"].format(username=credentials["login"],addr=f"{self.__addr[0]}:{self.__addr[1]}"))
+                    return -1
+                if not bcrypt.checkpw(credentials["password"].encode("utf-8"),result[0].encode("utf-8")):
                     self.__conn.send(make_message(TEXT["login_bad_password"],action=ACTION["login"]))
                     # self.__conn.close()
                     log.warning(TEXT["login_fail"].format(username=credentials["login"],addr=f"{self.__addr[0]}:{self.__addr[1]}"))
@@ -77,11 +86,18 @@ class User():
     def __registerUser(self, jsonPacket):
         queryAddUser = """INSERT INTO USERS (name, password) VALUES (%s, %s)"""
         credentials=jsonPacket["properties"]
+        
+        password_hash = bcrypt.hashpw(
+            credentials["password"].encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+
         log.debug(f"""Attempting execution of:\n{queryAddUser}\nlogin: {credentials["login"]}\npassword: {credentials["password"]}""")
         with self.__dbConn:
             with self.__dbConn.cursor() as cursor:
                 try:
-                    cursor.execute(queryAddUser, (credentials["login"], credentials["password"]))
+                    cursor.execute(queryAddUser, (credentials["login"], password_hash))
                 except psycopg2.errors.UniqueViolation:
                     # TODO:
                         # I have error here (rollback)
