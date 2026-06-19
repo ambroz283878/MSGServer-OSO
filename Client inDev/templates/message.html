@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Wiadomości{% endblock %}
+
+{% block head %}
+<style>
+  .msg-in  { background: rgba(99,102,241,0.18); border-left: 3px solid #6366f1; }
+  .msg-out { background: rgba(255,255,255,0.07); border-left: 3px solid #71717a; }
+  .user-btn.selected { background: rgba(99,102,241,0.35); border-color: #6366f1; }
+  #inbox { max-height: 320px; overflow-y: auto; }
+  #inbox::-webkit-scrollbar { width: 4px; }
+  #inbox::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+</style>
+{% endblock %}
+
+{% block header_user %}
+<div class="text-sm font-medium">{{ USERNAME }}</div>
+<div class="text-xs text-green-400">Status: online</div>
+<a href="{{ url_for('logout') }}" class="text-xs text-zinc-400 hover:text-zinc-200">Wyloguj się</a>
+{% endblock %}
+
+{% block content %}
+<div class="pt-24 pb-12 px-4 max-w-5xl mx-auto">
+  <div class="grid grid-cols-3 gap-4 items-start">
+
+    <!-- LEWA KOLUMNA: lista użytkowników -->
+    <div class="col-span-1 bg-zinc-800/70 border border-white/10 rounded-2xl p-4">
+      <div class="flex items-center gap-2 mb-4">
+        <i class="fa-solid fa-users text-indigo-400"></i>
+        <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Aktywni użytkownicy</h2>
+      </div>
+      <div id="user-list" class="flex flex-col gap-2">
+        {% for u in online_users %}
+        <button class="user-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition text-left"
+          data-username="{{ u }}" onclick="selectUser(this)">
+          <div class="w-8 h-8 rounded-full bg-indigo-600/40 flex items-center justify-center text-indigo-300 text-xs font-bold flex-shrink-0">
+            {{ u[0]|upper }}
+          </div>
+          <div>
+            <div class="text-sm font-medium text-zinc-100">{{ u }}</div>
+            <div class="text-xs text-green-400 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-green-400 rounded-full inline-block"></span>online
+            </div>
+          </div>
+        </button>
+        {% else %}
+        <p class="text-xs text-zinc-500 text-center py-4">Brak aktywnych użytkowników</p>
+        {% endfor %}
+      </div>
+
+      <hr class="border-white/10 my-4">
+
+      <div class="flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-address-book text-zinc-400"></i>
+        <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wide">Nieaktywni użytkownicy</h2>
+      </div>
+      <div id="all-user-list" class="flex flex-col gap-2">
+        {% for u in offlineUsers %}
+        <button class="user-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition text-left"
+          data-username="{{ u }}" onclick="selectUser(this)">
+          <div class="w-8 h-8 rounded-full bg-zinc-600/60 flex items-center justify-center text-zinc-300 text-xs font-bold flex-shrink-0">
+            {{ u[0]|upper }}
+          </div>
+          <div>
+            <div class="text-sm font-medium text-zinc-300">{{ u }}</div>
+            <div class="text-xs text-zinc-500 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-zinc-500 rounded-full inline-block"></span>offline
+            </div>
+          </div>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- PRAWA KOLUMNA: skrzynka + composer -->
+    <div class="col-span-2 flex flex-col gap-4">
+
+      <!-- SKRZYNKA ODBIORCZA -->
+      <div class="bg-zinc-800/70 border border-white/10 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-inbox text-indigo-400"></i>
+            <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Skrzynka odbiorcza</h2>
+          </div>
+          <span class="text-xs text-zinc-500" id="inbox-filter-label">Wszystkie wiadomości</span>
+        </div>
+        <div id="inbox" class="flex flex-col gap-2">
+          {% for msg in messages %}
+          <div class="rounded-xl px-4 py-3 {% if msg.sender == USERNAME %}msg-out{% else %}msg-in{% endif %}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold {% if msg.sender == USERNAME %}text-zinc-400{% else %}text-indigo-300{% endif %}">
+                {{ msg.sender }}
+                {% if msg.sender == USERNAME %}
+                  <span class="text-zinc-600 font-normal">→ {{ msg.recipient }}</span>
+                {% endif %}
+              </span>
+              <span class="text-xs text-zinc-600">{{ msg.timestamp }}</span>
+            </div>
+            <p class="text-sm text-zinc-200">{{ msg.content }}</p>
+          </div>
+          {% else %}
+          <div class="text-center py-10 text-zinc-600">
+            <i class="fa-regular fa-comment-dots text-3xl mb-2 block"></i>
+            <p class="text-sm">Brak wiadomości</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- COMPOSER -->
+      <div class="bg-zinc-800/70 border border-white/10 rounded-2xl p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <i class="fa-solid fa-paper-plane text-indigo-400"></i>
+          <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Nowa wiadomość</h2>
+        </div>
+        <form action="{{ url_for('send_message') }}" method="POST">
+          <div class="mb-3">
+            <label class="text-xs text-zinc-400 uppercase tracking-wide mb-1 block">Odbiorca</label>
+            <div class="flex items-center gap-2 bg-zinc-700/60 border border-white/10 rounded-xl px-3 py-2">
+              <i class="fa-solid fa-at text-zinc-500 text-sm"></i>
+              <input id="recipient-input" name="user" type="text"
+                placeholder="Wybierz z listy lub wpisz nazwę..."
+                class="bg-transparent flex-1 text-sm text-zinc-100 placeholder-zinc-600 outline-none" required>
+              <button type="button" onclick="clearRecipient()" class="text-zinc-600 hover:text-zinc-400 text-xs">✕</button>
+            </div>
+            {% if USERNAME_ERR %}
+              <p class="text-xs text-red-400 mt-1">{{ USERNAME_ERR }}</p>
+            {% endif %}
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-zinc-400 uppercase tracking-wide mb-1 block">Wiadomość</label>
+            <textarea name="msg" id="msg-textarea" rows="4"
+              placeholder="Napisz wiadomość..."
+              class="w-full bg-zinc-700/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 outline-none resize-none focus:border-indigo-500/50 transition"
+              required></textarea>
+            <div class="flex justify-between items-center mt-1">
+              {% if PASSWD_ERR %}
+                <p class="text-xs text-red-400">{{ PASSWD_ERR }}</p>
+              {% endif %}
+              <span id="char-count" class="text-xs text-zinc-600 ml-auto">0 / 500</span>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button type="submit"
+              class="flex-1 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition rounded-xl py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> Wyślij
+            </button>
+            <button type="button" onclick="clearForm()"
+              class="px-4 bg-zinc-700/60 hover:bg-zinc-600/60 transition rounded-xl text-sm text-zinc-400">
+              Wyczyść
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function selectUser(btn) {
+    document.querySelectorAll('.user-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('recipient-input').value = btn.dataset.username;
+    document.getElementById('inbox-filter-label').textContent = 'Konwersacja z: ' + btn.dataset.username;
+  }
+
+  function clearRecipient() {
+    document.getElementById('recipient-input').value = '';
+    document.querySelectorAll('.user-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('inbox-filter-label').textContent = 'Wszystkie wiadomości';
+  }
+
+  function clearForm() {
+    document.getElementById('recipient-input').value = '';
+    document.getElementById('msg-textarea').value = '';
+    document.getElementById('char-count').textContent = '0 / 500';
+    clearRecipient();
+  }
+
+  const textarea = document.getElementById('msg-textarea');
+  const charCount = document.getElementById('char-count');
+  textarea.addEventListener('input', () => {
+    const len = textarea.value.length;
+    charCount.textContent = len + ' / 500';
+    charCount.style.color = len > 450 ? 'rgb(248 113 113)' : '';
+    if (len > 500) textarea.value = textarea.value.slice(0, 500);
+  });
+
+  const inbox = document.getElementById('inbox');
+  if (inbox) inbox.scrollTop = inbox.scrollHeight;
+</script>
+{% endblock %}

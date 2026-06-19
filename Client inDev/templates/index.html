@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Strona główna{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center py-80">
+  <div class="bg-zinc-600/70 border-2 border-zinc-200/80 rounded-3xl p-8 flex flex-col items-center gap-4">
+    <a href="{{ url_for('login') }}">
+      <button class="w-48 h-10 bg-indigo-700 hover:bg-indigo-600 rounded-xl text-white font-bold transition">Zaloguj się</button>
+    </a>
+    <a href="{{ url_for('register') }}">
+      <button class="w-48 h-10 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-white font-bold transition">Zarejestruj się</button>
+    </a>
+  </div>
+</div>
+{% endblock %}
